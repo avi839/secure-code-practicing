@@ -1,0 +1,63 @@
+# SecureReflex AI - Docker Compose
+#   docker compose up --build                      -> backend (SQLite in a volume) + frontend
+#   docker compose --profile postgres up --build   -> also starts PostgreSQL (see backend comment)
+#
+# The API has NO authentication and NO rate limiting. Ports are published on 127.0.0.1 only;
+# do not change them to public interfaces.
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: securereflex-backend
+    env_file:
+      - .env
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: sqlite+aiosqlite:////app/data/securereflex.db
+      # To use PostgreSQL instead, start with `--profile postgres` and replace the line above with:
+      # DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/securereflex
+      CORS_ORIGINS: http://localhost:3000
+    volumes:
+      - backend_data:/app/data
+    # Loopback only: the frontend reaches the backend at backend:8000 on the compose network;
+    # this mapping just keeps /docs and /api/health reachable from the host.
+    ports:
+      - "127.0.0.1:8000:8000"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        BACKEND_URL: http://backend:8000
+    container_name: securereflex-frontend
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: securereflex-postgres
+    profiles: ["postgres"]
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: securereflex
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  backend_data:
+  postgres_data:

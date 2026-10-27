@@ -1,0 +1,12 @@
+Self-hosted web fonts (loaded via @font-face in src/app/globals.css)
+
+Geist-Variable.woff2, GeistMono-Variable.woff2
+  Geist and Geist Mono by Vercel - SIL Open Font License 1.1
+  Source: https://github.com/vercel/geist-font (npm package "geist" 1.3.1, dist/fonts)
+
+Satoshi-Medium.woff2 (500), Satoshi-Bold.woff2 (700)
+  Satoshi by Indian Type Foundry - ITF Free Font License
+  Source: https://www.fontshare.com/fonts/satoshi
+
+Fallbacks if a file is missing: Inter, system-ui, sans-serif (headings/body) and
+ui-monospace, SFMono-Regular, Menlo, Consolas, monospace (code).
